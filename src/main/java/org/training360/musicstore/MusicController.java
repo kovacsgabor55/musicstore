@@ -28,8 +28,9 @@ public class MusicController {
     }
 
     @PostMapping
-    public InstrumentDTO addInstrument(@Valid @RequestBody CreateInstrumentCommand command) {
-        return musicService.addInstrument(command);
+    @ResponseStatus(HttpStatus.CREATED)
+    public InstrumentDTO createInstrument(@Valid @RequestBody CreateInstrumentCommand command) {
+        return musicService.createInstrument(command);
     }
 
     @DeleteMapping
@@ -39,7 +40,7 @@ public class MusicController {
 
     @GetMapping("/{id}")
     public InstrumentDTO searchInstrumentById(@PathVariable long id) {
-        return musicService.findInstrumentById(id);
+        return musicService.searchInstrumentById(id);
     }
 
     @PutMapping("/{id}")

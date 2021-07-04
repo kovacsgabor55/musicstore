@@ -29,31 +29,19 @@ public class MusicService {
     public List<InstrumentDTO> searchInstrument(Optional<String> brand, Optional<Integer> price) {
         Type targetListType = new TypeToken<List<InstrumentDTO>>() {
         }.getType();
-        List<Instrument> filtered = instruments;
-        if (brand.isPresent()) {
-            filtered = filtered.stream()
-                    .filter(e -> e.getBrand().toLowerCase().startsWith(brand.get().toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-        if (price.isPresent()) {
-            filtered = instruments.stream()
-                    .filter(e -> e.getPrice() == price.get())
-                    .collect(Collectors.toList());
-        }
+
+        List<Instrument> filtered = instruments.stream()
+                .filter(e -> brand.isEmpty() || e.getBrand().equalsIgnoreCase(brand.get()))
+                .filter(e -> price.isEmpty() || e.getPrice() == price.get())
+                .collect(Collectors.toList());
+
         return modelMapper.map(filtered, targetListType);
     }
 
-    public InstrumentDTO addInstrument(CreateInstrumentCommand command) {
+    public InstrumentDTO createInstrument(CreateInstrumentCommand command) {
         Instrument instrument = new Instrument(idGenerator.incrementAndGet(), command.getBrand(), command.getInstrumentType(), command.getPrice(), LocalDate.now());
         instruments.add(instrument);
         return modelMapper.map(instrument, InstrumentDTO.class);
-    }
-
-    public InstrumentDTO findInstrumentById(long id) {
-        return modelMapper.map(instruments.stream()
-                        .filter(e -> e.getId() == id).findAny()
-                        .orElseThrow(() -> new IllegalArgumentException("Instrument not fount: " + id)),
-                InstrumentDTO.class);
     }
 
     public void deleteAllInstrument() {
@@ -61,11 +49,13 @@ public class MusicService {
         idGenerator.set(0L);
     }
 
+    public InstrumentDTO searchInstrumentById(long id) {
+        return modelMapper.map(findById(id), InstrumentDTO.class);
+    }
+
     public InstrumentDTO updateInstrumentPrice(long id, UpdatePriceCommand command) {
-        Instrument instrument = instruments.stream()
-                .filter(e -> e.getId() == id)
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Instrument not found: " + id));
-        if ((instrument.getPrice() != command.getPrice())) {
+        Instrument instrument = findById(id);
+        if (instrument.getPrice() != command.getPrice()) {
             instrument.setPrice(command.getPrice());
             instrument.setPostDate(LocalDate.now());
         }
@@ -77,5 +67,12 @@ public class MusicService {
                 .filter(e -> e.getId() == id)
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Instrument not found: " + id));
         instruments.remove(instrument);
+    }
+
+    private Instrument findById(long id) {
+        return instruments.stream()
+                .filter(e -> e.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Instrument not fount: " + id));
     }
 }

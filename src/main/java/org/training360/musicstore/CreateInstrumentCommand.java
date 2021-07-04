@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 
 @Data
@@ -12,9 +13,12 @@ import javax.validation.constraints.PositiveOrZero;
 @AllArgsConstructor
 public class CreateInstrumentCommand {
 
-    @NotBlank
+    @NotBlank(message = "Name cannot be blank!")
     private String brand;
+
+    @NotNull
     private InstrumentType instrumentType;
+
     @PositiveOrZero
     private int price;
 }
